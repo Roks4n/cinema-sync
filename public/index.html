@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кинотеатр с синхронизацией</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-film"></i> Синхронизированный Кинотеатр</h1>
+            <p class="subtitle">Смотрите видео вместе с друзьями в реальном времени</p>
+        </header>
+
+        <div class="main-content">
+            <div class="video-container">
+                <div id="player-container">
+                    <!-- В разделе url-input-section обновляем подсказку: -->
+<div class="url-input-section">
+    <h3><i class="fas fa-link"></i> Вставьте ссылку на видео</h3>
+    <div class="input-group">
+        <input type="text" id="video-url" placeholder="https://rutube.ru/video/... или https://vk.com/video...">
+        <button id="load-video-btn" class="btn-primary">
+            <i class="fas fa-play"></i> Загрузить
+        </button>
+    </div>
+    <p class="hint">Поддерживаются: YouTube, RuTube, VK Видео, Vimeo, прямые ссылки на видеофайлы (mp4, webm, avi и др.)</p>
+</div>
+                    
+                    <div id="video-placeholder">
+                        <i class="fas fa-video"></i>
+                        <p>Вставьте ссылку на видео выше, чтобы начать просмотр</p>
+                    </div>
+                    
+                    <iframe id="video-player" style="display: none;"></iframe>
+                    
+                    <video id="html5-player" controls style="display: none;"></video>
+                    
+                    <div class="player-controls">
+                        <button id="play-pause-btn" class="control-btn" disabled>
+                            <i class="fas fa-play"></i> Воспроизвести
+                        </button>
+                        <button id="stop-btn" class="control-btn" disabled>
+                            <i class="fas fa-stop"></i> Стоп
+                        </button>
+                        <div class="time-display">
+                            <span id="current-time">00:00</span> / <span id="duration">00:00</span>
+                        </div>
+                        <input type="range" id="seek-slider" min="0" max="100" value="0" disabled>
+                        <button id="fullscreen-btn" class="control-btn">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="room-info">
+                    <h3><i class="fas fa-users"></i> Информация о комнате</h3>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-label">Пользователей онлайн:</span>
+                            <span id="user-count" class="stat-value">1</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Статус:</span>
+                            <span id="playback-status" class="stat-value">Остановлено</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Синхронизация:</span>
+                            <span id="sync-status" class="stat-value connected">Активна</span>
+                        </div>
+                    </div>
+                    <button id="share-btn" class="btn-secondary">
+                        <i class="fas fa-share-alt"></i> Поделиться ссылкой на комнату
+                    </button>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> Как это работает</h3>
+                <ol>
+                    <li>Вставьте ссылку на видео в поле выше и нажмите "Загрузить"</li>
+                    <li>Видео начнет воспроизводиться у всех пользователей в комнате</li>
+                    <li>Любой пользователь может управлять воспроизведением: ставить на паузу, перематывать</li>
+                    <li>Все действия синхронизируются в реальном времени</li>
+                    <li>Поделитесь ссылкой на эту страницу с друзьями, чтобы смотреть вместе</li>
+                </ol>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Синхронизированный кинотеатр &copy; 2023 | Все видео загружаются с внешних источников</p>
+        </footer>
+    </div>
+    
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3><i class="fas fa-share-alt"></i> Поделиться комнатой</h3>
+            <p>Отправьте эту ссылку друзьям, чтобы они присоединились к просмотру:</p>
+            <div class="share-link">
+                <input type="text" id="room-url" readonly value="">
+                <button id="copy-link-btn" class="btn-primary">
+                    <i class="far fa-copy"></i> Копировать
+                </button>
+            </div>
+            <p class="hint">Откройте эту ссылку в другом браузере или устройстве для тестирования</p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
