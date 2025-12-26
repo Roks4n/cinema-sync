@@ -6,41 +6,47 @@
     <title>Кинотеатр с синхронизацией</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-film"></i> Синхронизированный Кинотеатр</h1>
-            <p class="subtitle">Смотрите видео вместе с друзьями в реальном времени</p>
+            <p class="subtitle">Смотрите видео вместе с друзьями в реальном времени. Воспроизведение синхронизируется автоматически!</p>
         </header>
 
         <div class="main-content">
             <div class="video-container">
                 <div id="player-container">
-                    <!-- В разделе url-input-section обновляем подсказку: -->
-<div class="url-input-section">
-    <h3><i class="fas fa-link"></i> Вставьте ссылку на видео</h3>
-    <div class="input-group">
-        <input type="text" id="video-url" placeholder="https://youtube.com/watch?v=... или https://rutube.ru/video/...">
-        <button id="load-video-btn" class="btn-primary">
-            <i class="fas fa-play"></i> Загрузить видео
-        </button>
-    </div>
-    <p class="hint">Поддерживаются: YouTube, RuTube, VK Видео, Vimeo, TikTok, прямые ссылки на видео (mp4, webm и др.)</p>
-    <div class="examples-container">
-        <p>Попробуйте примеры:</p>
-        <div class="example-links"></div>
-    </div>
-</div>
+                    <div class="url-input-section">
+                        <h3><i class="fas fa-link"></i> Вставьте ссылку на видео</h3>
+                        <div class="input-group">
+                            <input type="text" id="video-url" placeholder="https://youtube.com/watch?v=... или https://rutube.ru/video/...">
+                            <button id="load-video-btn" class="btn-primary">
+                                <i class="fas fa-play"></i> Загрузить видео
+                            </button>
+                        </div>
+                        <p class="hint">Поддерживаются: YouTube, RuTube, VK Видео, Vimeo, TikTok, прямые ссылки на видео (mp4, webm и др.)</p>
+                        <div class="examples-container">
+                            <p>Попробуйте примеры:</p>
+                            <div class="example-links">
+                                <!-- Примеры будут добавлены через JS -->
+                            </div>
+                        </div>
+                    </div>
                     
                     <div id="video-placeholder">
                         <i class="fas fa-video"></i>
-                        <p>Вставьте ссылку на видео выше, чтобы начать просмотр</p>
+                        <p>Вставьте ссылку на видео выше, чтобы начать синхронизированный просмотр</p>
+                        <div class="sync-hint">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Видео автоматически синхронизируется со всеми в комнате</span>
+                        </div>
                     </div>
                     
-                    <iframe id="video-player" style="display: none;"></iframe>
+                    <iframe id="video-player" style="display: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     
-                    <video id="html5-player" controls style="display: none;"></video>
+                    <video id="html5-player" controls style="display: none;" crossorigin="anonymous"></video>
                     
                     <div class="player-controls">
                         <button id="play-pause-btn" class="control-btn" disabled>
@@ -56,6 +62,17 @@
                         <button id="fullscreen-btn" class="control-btn">
                             <i class="fas fa-expand"></i>
                         </button>
+                        <button id="sync-btn" class="control-btn" title="Принудительная синхронизация">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="skip-buttons">
+                        <button class="skip-btn" data-skip="-10">-10с</button>
+                        <button class="skip-btn" data-skip="-5">-5с</button>
+                        <button class="skip-btn" data-skip="5">+5с</button>
+                        <button class="skip-btn" data-skip="10">+10с</button>
+                        <button class="skip-btn" data-skip="30">+30с</button>
                     </div>
                 </div>
                 
@@ -63,8 +80,16 @@
                     <h3><i class="fas fa-users"></i> Информация о комнате</h3>
                     <div class="stats">
                         <div class="stat">
+                            <span class="stat-label">Комната:</span>
+                            <span id="room-id" class="stat-value">Загрузка...</span>
+                        </div>
+                        <div class="stat">
                             <span class="stat-label">Пользователей онлайн:</span>
                             <span id="user-count" class="stat-value">1</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Ваша роль:</span>
+                            <span id="user-role" class="stat-value">Загрузка...</span>
                         </div>
                         <div class="stat">
                             <span class="stat-label">Статус:</span>
@@ -72,48 +97,233 @@
                         </div>
                         <div class="stat">
                             <span class="stat-label">Синхронизация:</span>
-                            <span id="sync-status" class="stat-value connected">Активна</span>
+                            <span id="sync-status" class="stat-value connected">Инициализация...</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Текущее видео:</span>
+                            <span id="current-video" class="stat-value">Не загружено</span>
                         </div>
                     </div>
-                    <button id="share-btn" class="btn-secondary">
-                        <i class="fas fa-share-alt"></i> Поделиться ссылкой на комнату
-                    </button>
+                    
+                    <div class="room-controls">
+                        <button id="share-btn" class="btn-secondary">
+                            <i class="fas fa-share-alt"></i> Поделиться ссылкой на комнату
+                        </button>
+                        <button id="new-room-btn" class="btn-secondary" style="margin-top: 10px;">
+                            <i class="fas fa-plus-circle"></i> Создать новую комнату
+                        </button>
+                        <button id="disconnect-btn" class="btn-secondary" style="margin-top: 10px; background-color: rgba(255,107,107,0.1); color: #ff6b6b;">
+                            <i class="fas fa-sign-out-alt"></i> Отключиться от синхронизации
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <div class="instructions">
-                <h3><i class="fas fa-info-circle"></i> Как это работает</h3>
+                <h3><i class="fas fa-info-circle"></i> Как работает синхронизация</h3>
                 <ol>
-                    <li>Вставьте ссылку на видео в поле выше и нажмите "Загрузить"</li>
-                    <li>Видео начнет воспроизводиться у всех пользователей в комнате</li>
-                    <li>Любой пользователь может управлять воспроизведением: ставить на паузу, перематывать</li>
-                    <li>Все действия синхронизируются в реальном времени</li>
-                    <li>Поделитесь ссылкой на эту страницу с друзьями, чтобы смотреть вместе</li>
+                    <li><strong>Создайте или присоединитесь к комнате:</strong> Каждая комната имеет уникальный ID</li>
+                    <li><strong>Загрузите видео:</strong> Вставьте ссылку и нажмите "Загрузить видео"</li>
+                    <li><strong>Поделитесь ссылкой:</strong> Нажмите "Поделиться ссылкой" и отправьте друзьям</li>
+                    <li><strong>Автоматическая синхронизация:</strong> Все пользователи в комнате видят видео одновременно</li>
+                    <li><strong>Управление воспроизведением:</strong> Любой пользователь может ставить на паузу, перематывать</li>
+                    <li><strong>Синхронизация в реальном времени:</strong> Изменения мгновенно применяются ко всем</li>
                 </ol>
+                
+                <div class="sync-demo">
+                    <h4><i class="fas fa-vial"></i> Тест синхронизации</h4>
+                    <p>Откройте эту страницу в другом окне браузера или на другом устройстве для тестирования синхронизации.</p>
+                    <div class="demo-controls">
+                        <button id="test-sync-btn" class="btn-secondary">
+                            <i class="fas fa-bolt"></i> Тест синхронизации
+                        </button>
+                        <button id="demo-users-btn" class="btn-secondary">
+                            <i class="fas fa-user-plus"></i> Добавить демо-пользователя
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         
         <footer>
             <p>Синхронизированный кинотеатр &copy; 2023 | Все видео загружаются с внешних источников</p>
+            <p class="tech-info">Технология: Web Storage API для синхронизации | Совместимо с современными браузерами</p>
         </footer>
     </div>
     
+    <!-- Модальное окно для шаринга -->
     <div id="share-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h3><i class="fas fa-share-alt"></i> Поделиться комнатой</h3>
-            <p>Отправьте эту ссылку друзьям, чтобы они присоединились к просмотру:</p>
+            <p>Отправьте эту ссылку друзьям, чтобы они присоединились к синхронизированному просмотру:</p>
             <div class="share-link">
                 <input type="text" id="room-url" readonly value="">
                 <button id="copy-link-btn" class="btn-primary">
-                    <i class="far fa-copy"></i> Копировать
+                    <i class="far fa-copy"></i> Копировать ссылку
                 </button>
             </div>
-            <p class="hint">Откройте эту ссылку в другом браузере или устройстве для тестирования</p>
+            <p class="hint"><i class="fas fa-qrcode"></i> Также можете отсканировать QR-код для быстрого доступа:</p>
+            <div id="qrcode-container" style="text-align: center; margin: 20px 0;">
+                <canvas id="qrcode" width="150" height="150" style="border: 1px solid #4ecdc4; padding: 10px; background: white;"></canvas>
+            </div>
+            <div class="share-buttons">
+                <button class="share-social" data-social="telegram" style="background-color: #0088cc;">
+                    <i class="fab fa-telegram"></i> Telegram
+                </button>
+                <button class="share-social" data-social="whatsapp" style="background-color: #25D366;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button class="share-social" data-social="vk" style="background-color: #4C75A3;">
+                    <i class="fab fa-vk"></i> VK
+                </button>
+            </div>
         </div>
     </div>
     
-    <script src="script.js"></script>
-</body>
+    <!-- Уведомления -->
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+    
+    <!-- Подсказки горячих клавиш -->
+    <details class="keyboard-hint">
+        <summary>
+            <i class="fas fa-keyboard"></i> Горячие клавиши
+        </summary>
+        <div class="shortcut-list">
+            <div class="shortcut-item">
+                <span class="shortcut-key">Пробел</span>
+                <span class="shortcut-description">Воспроизведение/Пауза</span>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-key">F</span>
+                <span class="shortcut-description">Полноэкранный режим</span>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-key">ESC</span>
+                <span class="shortcut-description">Выйти из полноэкранного</span>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-key">Enter</span>
+                <span class="shortcut-description">Загрузить видео</span>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-key">S</span>
+                <span class="shortcut-description">Синхронизировать</span>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-key">M</span>
+                <span class="shortcut-description">Включить/выключить звук</span>
+            </div>
+        </div>
+    </details>
+    
+    <!-- Индикатор синхронизации -->
+    <div id="sync-indicator" style="display: none; position: fixed; bottom: 20px; left: 20px; background: rgba(78, 205, 196, 0.9); color: white; padding: 10px 15px; border-radius: 10px; z-index: 1000; animation: pulse 2s infinite;">
+        <i class="fas fa-sync-alt fa-spin"></i>
+        <span>Синхронизация...</span>
+    </div>
 
+    <script src="script.js"></script>
+    
+    <style>
+        /* Дополнительные стили для синхронизации */
+        .sync-hint {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #4ecdc4;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4ecdc4;
+        }
+        
+        .sync-hint i {
+            animation: spin 2s linear infinite;
+        }
+        
+        .room-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .sync-demo {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 209, 102, 0.1);
+            border-radius: 10px;
+            border-left: 3px solid #ffd166;
+        }
+        
+        .sync-demo h4 {
+            color: #ffd166;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .share-social {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .share-social:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tech-info {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #sync-btn.force-sync {
+            animation: pulse 1s infinite;
+            background-color: #ffd166;
+            color: #1a1a2e;
+        }
+        
+        #sync-btn.force-sync:hover {
+            background-color: #ffc145;
+        }
+    </style>
+</body>
 </html>
